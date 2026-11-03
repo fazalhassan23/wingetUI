@@ -24,11 +24,22 @@
     <DockPanel>
      <StackPanel Orientation="Horizontal" DockPanel.Dock="Top" Margin="6">
       <Button Content="_Refresh" Command="{Binding RefreshCommand}" Padding="8,4"/>
-      <Button Content="_Upgrade selected" Click="UpgradeSelected" Padding="8,4" Margin="6,0"/>
+      <Button x:Name="UpgradeButton" Content="_Upgrade selected (0)" IsEnabled="False" Click="UpgradeSelected" Padding="8,4" Margin="6,0"/>
+      <Button Content="Select _all" Click="SelectAllUpdates" Padding="8,4"/>
+      <Button Content="_Clear selection" Click="ClearUpdates" Padding="8,4" Margin="6,0"/>
       <TextBlock Text="{Binding LastRefresh}" VerticalAlignment="Center"/>
      </StackPanel>
-     <DataGrid x:Name="UpdatesGrid" Style="{StaticResource Packages}" ItemsSource="{Binding Updates}" AutomationProperties.Name="Available updates">
+     <DataGrid x:Name="UpdatesGrid" Style="{StaticResource Packages}" ItemsSource="{Binding Updates}" SelectionChanged="UpdateSelectionChanged" AutomationProperties.Name="Available updates">
       <DataGrid.Columns>
+       <DataGridTemplateColumn Header="Select" Width="64">
+        <DataGridTemplateColumn.CellTemplate>
+         <DataTemplate>
+          <CheckBox HorizontalAlignment="Center" VerticalAlignment="Center"
+           AutomationProperties.Name="{Binding Name, StringFormat='Select {0} for upgrade'}"
+           IsChecked="{Binding IsSelected, RelativeSource={RelativeSource AncestorType=DataGridRow}, Mode=TwoWay}"/>
+         </DataTemplate>
+        </DataGridTemplateColumn.CellTemplate>
+       </DataGridTemplateColumn>
        <DataGridTextColumn Header="Name" Binding="{Binding Name}" Width="*"/>
        <DataGridTextColumn Header="Package ID" Binding="{Binding Id}" Width="2*"/>
        <DataGridTextColumn Header="Source" Binding="{Binding Source}"/>

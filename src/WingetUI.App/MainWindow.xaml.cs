@@ -25,6 +25,17 @@ public partial class MainWindow : Window
         };
     }
 
+    private void SelectAllUpdates(object sender, RoutedEventArgs e) => UpdatesGrid.SelectAll();
+
+    private void ClearUpdates(object sender, RoutedEventArgs e) => UpdatesGrid.UnselectAll();
+
+    private void UpdateSelectionChanged(object sender, System.Windows.Controls.SelectionChangedEventArgs e)
+    {
+        int count = UpdatesGrid.SelectedItems.Count;
+        UpgradeButton.Content = $"_Upgrade selected ({count})";
+        UpgradeButton.IsEnabled = count > 0;
+    }
+
     private async void UpgradeSelected(object sender, RoutedEventArgs e) =>
         await ConfirmAsync(UpdatesGrid.SelectedItems.Cast<Package>().ToArray(), upgrade: true);
 
