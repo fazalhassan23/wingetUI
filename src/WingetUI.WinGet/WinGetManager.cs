@@ -156,7 +156,21 @@ public sealed class WinGetManager : IPackageManager
     {
         var clsid = new Guid("C53A4F16-787E-42A4-B304-29EFFB4BF597");
         var iid = new Guid("B375E3B9-F2E0-5C93-87A7-B67497F7E593");
-        Marshal.ThrowExceptionForHR(CoCreateInstance(ref clsid, IntPtr.Zero, 4, ref iid, out var pointer));
+        const uint localServer = 0x4;
+        const uint allowLowerTrustRegistration = 0x04000000;
+        const int classNotRegistered = unchecked((int)0x80040154);
+        int result = CoCreateInstance(ref clsid, IntPtr.Zero, localServer, ref iid, out var pointer);
+        if (result == classNotRegistered)
+        {
+            using var identity = WindowsIdentity.GetCurrent();
+            if (new WindowsPrincipal(identity).IsInRole(WindowsBuiltInRole.Administrator))
+            {
+                // The signed-in user's packaged WinGet server can have a lower trust registration.
+                result = CoCreateInstance(ref clsid, IntPtr.Zero, localServer | allowLowerTrustRegistration,
+                    ref iid, out pointer);
+            }
+        }
+        Marshal.ThrowExceptionForHR(result);
         try
         {
             return WinRT.MarshalInterface<PackageManager>.FromAbi(pointer);
