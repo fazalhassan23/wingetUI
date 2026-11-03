@@ -29,7 +29,43 @@ internal static class Program
 
             var result = manager.GetPredefinedPackageCatalog(PredefinedPackageCatalog.OpenWindowsCatalog).Connect();
             Console.WriteLine($"Community catalog connection: {result.Status}");
-            return result.Status == ConnectResultStatus.Ok ? 0 : 1;
+            if (result.Status != ConnectResultStatus.Ok)
+                return 1;
+
+            var search = new FindPackagesOptions { ResultLimit = 5 };
+            search.Selectors.Add(new PackageMatchFilter
+            {
+                Field = PackageMatchField.Id,
+                Option = PackageFieldMatchOption.Equals,
+                Value = "Microsoft.PowerToys"
+            });
+            var found = result.PackageCatalog.FindPackages(search);
+            Console.WriteLine($"Exact catalog search: {found.Status}, matches={found.Matches.Count}");
+            for (int index = 0; index < found.Matches.Count; index++)
+                Console.WriteLine($"  {found.Matches[index].CatalogPackage.Id}");
+
+            var composite = new CreateCompositePackageCatalogOptions
+            {
+                CompositeSearchBehavior = CompositeSearchBehavior.LocalCatalogs
+            };
+            composite.Catalogs.Add(manager.GetPredefinedPackageCatalog(PredefinedPackageCatalog.OpenWindowsCatalog));
+            var installedCatalog = manager.CreateCompositePackageCatalog(composite).Connect();
+            Console.WriteLine($"Installed catalog connection: {installedCatalog.Status}");
+            if (installedCatalog.Status != ConnectResultStatus.Ok)
+                return 1;
+
+            var installed = installedCatalog.PackageCatalog.FindPackages(new FindPackagesOptions());
+            Console.WriteLine($"Installed search: {installed.Status}, matches={installed.Matches.Count}");
+            int updates = 0;
+            for (int index = 0; index < installed.Matches.Count; index++)
+            {
+                if (installed.Matches[index].CatalogPackage.IsUpdateAvailable)
+                    updates++;
+            }
+
+            Console.WriteLine($"WinGet reports updates for {updates} installed entries.");
+            return found.Status == FindPackagesResultStatus.Ok && found.Matches.Count == 1 &&
+                   installed.Status == FindPackagesResultStatus.Ok ? 0 : 1;
         }
         catch (Exception error)
         {
