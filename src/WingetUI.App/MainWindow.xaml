@@ -33,23 +33,23 @@
       <Button Content="_Clear selection" Click="ClearUpdates" Padding="8,4" Margin="6,0"/>
       <TextBlock Text="{Binding LastRefresh}" VerticalAlignment="Center"/>
      </StackPanel>
-     <DataGrid x:Name="UpdatesGrid" Style="{StaticResource Packages}" ItemsSource="{Binding Updates}" SelectionChanged="UpdateSelectionChanged" AutomationProperties.Name="Available updates">
+     <DataGrid x:Name="UpdatesGrid" Style="{StaticResource Packages}" ItemsSource="{Binding Updates}" AutomationProperties.Name="Available updates">
       <DataGrid.Columns>
        <DataGridTemplateColumn Header="Select" Width="64">
         <DataGridTemplateColumn.CellTemplate>
          <DataTemplate>
           <CheckBox HorizontalAlignment="Center" VerticalAlignment="Center"
-           AutomationProperties.Name="{Binding Name, StringFormat='Select {0} for upgrade'}"
-           IsChecked="{Binding IsSelected, RelativeSource={RelativeSource AncestorType=DataGridRow}, Mode=TwoWay}"/>
+           AutomationProperties.Name="{Binding Package.Name, StringFormat='Select {0} for upgrade'}"
+           IsChecked="{Binding IsChecked, Mode=OneWay}" Click="UpdateCheckboxClicked"/>
          </DataTemplate>
         </DataGridTemplateColumn.CellTemplate>
        </DataGridTemplateColumn>
-       <DataGridTextColumn Header="Name" Binding="{Binding Name}" Width="*"/>
-       <DataGridTextColumn Header="Package ID" Binding="{Binding Id}" Width="2*"/>
-       <DataGridTextColumn Header="Source" Binding="{Binding Source}"/>
-       <DataGridTextColumn Header="Installed" Binding="{Binding Installed}"/>
-       <DataGridTextColumn Header="Available" Binding="{Binding Available}"/>
-       <DataGridTextColumn Header="Eligibility" Binding="{Binding Eligibility}"/>
+       <DataGridTextColumn Header="Name" Binding="{Binding Package.Name}" Width="*"/>
+       <DataGridTextColumn Header="Package ID" Binding="{Binding Package.Id}" Width="2*"/>
+       <DataGridTextColumn Header="Source" Binding="{Binding Package.Source}"/>
+       <DataGridTextColumn Header="Installed" Binding="{Binding Package.Installed}"/>
+       <DataGridTextColumn Header="Available" Binding="{Binding Package.Available}"/>
+       <DataGridTextColumn Header="Eligibility" Binding="{Binding Package.Eligibility}"/>
       </DataGrid.Columns>
      </DataGrid>
     </DockPanel>

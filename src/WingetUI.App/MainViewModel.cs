@@ -23,7 +23,7 @@ public partial class MainViewModel(IPackageManager backend) : ObservableObject
     [ObservableProperty] private bool indeterminate;
     [ObservableProperty] private bool busy;
     [ObservableProperty] private IReadOnlyList<Package> installed = [];
-    [ObservableProperty] private IReadOnlyList<Package> updates = [];
+    [ObservableProperty] private IReadOnlyList<UpdateRow> updates = [];
     [ObservableProperty] private IReadOnlyList<Package> searchResults = [];
     public ObservableCollection<ActivityEntry> Activity { get; } = [];
 
@@ -59,7 +59,8 @@ public partial class MainViewModel(IPackageManager backend) : ObservableObject
         try
         {
             Installed = await backend.ListInstalledAsync(CancellationToken.None);
-            Updates = Installed.Where(package => package.CanUpgrade && package.Source == "winget" && package.Available is not null).ToArray();
+            Updates = Installed.Where(package => package.CanUpgrade && package.Source == "winget" && package.Available is not null)
+                .Select(package => new UpdateRow(package)).ToArray();
             inventoryCurrent = true;
             LastRefresh = $"Refreshed at {DateTime.Now:t}";
             Status = Updates.Count == 0 ? "No updates found." : $"{Updates.Count} updates available.";
@@ -216,4 +217,11 @@ public partial class ActivityEntry(Package package, bool upgrade) : ObservableOb
 
     partial void OnStatusChanged(string value) => OnPropertyChanged(nameof(Display));
     partial void OnDetailChanged(string value) => OnPropertyChanged(nameof(Display));
+}
+
+public partial class UpdateRow(Package package) : ObservableObject
+{
+    public Package Package { get; } = package;
+
+    [ObservableProperty] private bool isChecked;
 }
