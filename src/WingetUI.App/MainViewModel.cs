@@ -21,11 +21,15 @@ public partial class MainViewModel(IPackageManager backend) : ObservableObject
     [ObservableProperty] private string lastRefresh = "";
     [ObservableProperty] private double percentage;
     [ObservableProperty] private bool indeterminate;
-    [ObservableProperty] private bool busy;
+    [ObservableProperty]
+    [NotifyCanExecuteChangedFor(nameof(RefreshCommand))]
+    private bool busy;
     [ObservableProperty] private IReadOnlyList<Package> installed = [];
     [ObservableProperty] private IReadOnlyList<UpdateRow> updates = [];
     [ObservableProperty] private IReadOnlyList<Package> searchResults = [];
     public ObservableCollection<ActivityEntry> Activity { get; } = [];
+
+    private bool CanRefresh() => !Busy;
 
     public void LoadHistory()
     {
@@ -34,7 +38,7 @@ public partial class MainViewModel(IPackageManager backend) : ObservableObject
             if (!File.Exists(HistoryPath))
                 return;
             var entries = JsonSerializer.Deserialize<ActivityEntry[]>(File.ReadAllText(HistoryPath)) ?? [];
-            foreach (var entry in entries.TakeLast(100))
+            foreach (var entry in entries.OrderByDescending(entry => entry.Created).Take(100))
             {
                 if (entry.Status is "Queued" or "Resolving" or "Running")
                 {
@@ -51,7 +55,7 @@ public partial class MainViewModel(IPackageManager backend) : ObservableObject
         }
     }
 
-    [RelayCommand]
+    [RelayCommand(CanExecute = nameof(CanRefresh))]
     public async Task RefreshAsync()
     {
         inventoryCurrent = false;
@@ -129,7 +133,9 @@ public partial class MainViewModel(IPackageManager backend) : ObservableObject
                 entry.Package.Source == package.Source && entry.Status is "Queued" or "Resolving" or "Running"))
                 continue;
             var item = new ActivityEntry(package, upgrade);
-            Activity.Add(item);
+            Activity.Insert(0, item);
+            foreach (var row in Updates.Where(row => row.Package == package))
+                row.Operation = item;
             queue.Enqueue(item);
         }
         SaveHistory();
@@ -144,6 +150,7 @@ public partial class MainViewModel(IPackageManager backend) : ObservableObject
             {
                 if (item.Status != "Queued")
                     continue;
+                item.Started = DateTimeOffset.Now;
                 item.Status = "Resolving";
                 Indeterminate = true;
                 SaveHistory();
@@ -153,7 +160,10 @@ public partial class MainViewModel(IPackageManager backend) : ObservableObject
                     {
                         if (item.Status is not ("Resolving" or "Running"))
                             return;
-                        if (update.Phase != "Resolving")
+                        item.Phase = update.Phase;
+                        item.ProgressValue = update.Percentage ?? 0;
+                        item.ProgressIndeterminate = update.Percentage is null;
+                        if (update.Phase != "Resolving" && item.Status != "Running")
                         {
                             item.Status = "Running";
                             SaveHistory();
@@ -176,13 +186,14 @@ public partial class MainViewModel(IPackageManager backend) : ObservableObject
                         pending.Detail = "Queue stopped after a backend failure.";
                     }
                 }
+                item.Finished = DateTimeOffset.Now;
                 completed++;
                 SaveHistory();
                 Indeterminate = false;
                 Percentage = 0;
                 OperationStatus = $"{completed} completed, {queue.Count(entry => entry.Status == "Queued")} waiting. Last: {item.Status}.";
-                await RefreshAsync();
             }
+            await RefreshAsync();
         }
         finally
         {
@@ -196,7 +207,7 @@ public partial class MainViewModel(IPackageManager backend) : ObservableObject
         {
             Directory.CreateDirectory(Path.GetDirectoryName(HistoryPath)!);
             var temporary = HistoryPath + ".tmp";
-            File.WriteAllText(temporary, JsonSerializer.Serialize(Activity.TakeLast(100)));
+            File.WriteAllText(temporary, JsonSerializer.Serialize(Activity.Take(100)));
             File.Move(temporary, HistoryPath, overwrite: true);
         }
         catch (Exception error) when (error is IOException or UnauthorizedAccessException)
@@ -213,9 +224,30 @@ public partial class ActivityEntry(Package package, bool upgrade) : ObservableOb
     public DateTimeOffset Created { get; init; } = DateTimeOffset.Now;
     [ObservableProperty] private string status = "Queued";
     [ObservableProperty] private string detail = "";
-    public string Display => $"{Created:g}  {Package.Id}  |  {Status}  {Detail}";
+    public string Action => Upgrade ? "Upgrade" : "Install";
+    public DateTimeOffset? Started { get; set; }
+    public DateTimeOffset? Finished { get; set; }
+    [ObservableProperty, NotifyPropertyChangedFor(nameof(RowStatus)), NotifyPropertyChangedFor(nameof(ShowProgress))]
+    [property: System.Text.Json.Serialization.JsonIgnore]
+    private string phase = "";
+    [ObservableProperty]
+    [property: System.Text.Json.Serialization.JsonIgnore]
+    private double progressValue;
+    [ObservableProperty]
+    [property: System.Text.Json.Serialization.JsonIgnore]
+    private bool progressIndeterminate = true;
+    public bool ShowProgress => Status is "Resolving" or "Running";
+    public string RowStatus => ShowProgress && !string.IsNullOrEmpty(Phase) ? Phase : Status;
+    public string Display =>
+        $"{Action} {Package.Name} ({Package.Id}) [{Package.Source}] {Package.Installed ?? "—"} → {Package.Available ?? "—"}\n" +
+        $"Queued {Created:g} | Started {Started:g} | Finished {Finished:g}\n{Status}: {Detail}";
 
-    partial void OnStatusChanged(string value) => OnPropertyChanged(nameof(Display));
+    partial void OnStatusChanged(string value)
+    {
+        OnPropertyChanged(nameof(Display));
+        OnPropertyChanged(nameof(RowStatus));
+        OnPropertyChanged(nameof(ShowProgress));
+    }
     partial void OnDetailChanged(string value) => OnPropertyChanged(nameof(Display));
 }
 
@@ -224,4 +256,5 @@ public partial class UpdateRow(Package package) : ObservableObject
     public Package Package { get; } = package;
 
     [ObservableProperty] private bool isChecked;
+    [ObservableProperty] private ActivityEntry? operation;
 }

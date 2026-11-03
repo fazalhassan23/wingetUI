@@ -1,6 +1,7 @@
 <Window x:Class="WingetUI.App.MainWindow" xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
  xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" Title="WingetUI" Width="1050" Height="650" MinWidth="700" MinHeight="420">
  <Window.Resources>
+  <BooleanToVisibilityConverter x:Key="VisibleWhenTrue"/>
   <Style x:Key="Packages" TargetType="DataGrid">
    <Setter Property="IsReadOnly" Value="True"/>
    <Setter Property="CanUserAddRows" Value="False"/>
@@ -50,6 +51,19 @@
        <DataGridTextColumn Header="Installed" Binding="{Binding Package.Installed}"/>
        <DataGridTextColumn Header="Available" Binding="{Binding Package.Available}"/>
        <DataGridTextColumn Header="Eligibility" Binding="{Binding Package.Eligibility}"/>
+       <DataGridTemplateColumn Header="Upgrade progress" Width="145">
+        <DataGridTemplateColumn.CellTemplate>
+         <DataTemplate>
+          <StackPanel Margin="4,2">
+           <TextBlock Text="{Binding Operation.RowStatus, TargetNullValue=—}"/>
+           <ProgressBar Height="5" Maximum="100" Value="{Binding Operation.ProgressValue, Mode=OneWay}"
+            IsIndeterminate="{Binding Operation.ProgressIndeterminate, FallbackValue=False}"
+            Visibility="{Binding Operation.ShowProgress, Converter={StaticResource VisibleWhenTrue}, FallbackValue=Collapsed}"
+            AutomationProperties.Name="{Binding Package.Name, StringFormat='Upgrade progress for {0}'}"/>
+          </StackPanel>
+         </DataTemplate>
+        </DataGridTemplateColumn.CellTemplate>
+       </DataGridTemplateColumn>
       </DataGrid.Columns>
      </DataGrid>
     </DockPanel>
@@ -88,7 +102,19 @@
       <Button Content="_Remove queued item" Click="RemoveQueued" Padding="8,4"/>
       <Button Content="_Copy details" Click="CopyDetails" Padding="8,4" Margin="6,0"/>
      </StackPanel>
-     <ListBox x:Name="ActivityList" ItemsSource="{Binding Activity}" DisplayMemberPath="Display" AutomationProperties.Name="Package activity"/>
+     <DataGrid x:Name="ActivityList" Style="{StaticResource Packages}" ItemsSource="{Binding Activity}"
+      SelectionMode="Single" AutomationProperties.Name="Package activity">
+      <DataGrid.Columns>
+       <DataGridTextColumn Header="Queued" Binding="{Binding Created, StringFormat=g}"/>
+       <DataGridTextColumn Header="Action" Binding="{Binding Action}"/>
+       <DataGridTextColumn Header="Package" Binding="{Binding Package.Name}" Width="*"/>
+       <DataGridTextColumn Header="Package ID" Binding="{Binding Package.Id}" Width="*"/>
+       <DataGridTextColumn Header="From" Binding="{Binding Package.Installed}"/>
+       <DataGridTextColumn Header="To" Binding="{Binding Package.Available}"/>
+       <DataGridTextColumn Header="Status" Binding="{Binding RowStatus}"/>
+       <DataGridTextColumn Header="Details" Binding="{Binding Detail}" Width="2*"/>
+      </DataGrid.Columns>
+     </DataGrid>
     </DockPanel>
    </TabItem>
   </TabControl>
