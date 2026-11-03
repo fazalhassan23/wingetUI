@@ -1,5 +1,14 @@
 using WingetUI.WinGet;
 
+if (args.Contains("--check-in-process"))
+{
+    var inProcess = new Microsoft.Management.Deployment.PackageManager();
+    var catalog = inProcess.GetPredefinedPackageCatalog(Microsoft.Management.Deployment.PredefinedPackageCatalog.OpenWindowsCatalog).Connect();
+    if (catalog.Status != Microsoft.Management.Deployment.ConnectResultStatus.Ok)
+        throw new InvalidOperationException($"In-process community catalog connection failed: {catalog.Status}.");
+    Console.WriteLine("In-process community catalog connected.");
+}
+
 var manager = new WinGetManager();
 var results = await manager.SearchAsync("Microsoft.PowerToys", CancellationToken.None);
 var match = results.Single(package => package.Id == "Microsoft.PowerToys");
