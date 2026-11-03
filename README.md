@@ -40,3 +40,5 @@ If inventory is unavailable, run `winget --version` in the same Windows account 
 The application starts unelevated and asks WinGet for interactive installer mode. Host validation covers Windows build 26200 and App Installer 1.29.380.0. The deployment targets Windows build 26100 and uses WinGet ComInterop 1.29.380. Controlled installs, upgrades, UAC outcomes, active cancellation, localization, and SDK-free clean-machine verification are still pending.
 
 Use **Restart as administrator** before selecting a batch to approve elevation for the app session. The app refreshes in the new process and requires a fresh confirmation. In an elevated session, WingetUI requests silent installer mode. Actual prompt behavior depends on WinGet and the installer.
+
+Administrator sessions use WinGet's in-process COM engine. To check catalog access without installing anything, run the published smoke test from an elevated PowerShell with --check-in-process. Per-installer UAC behavior still requires an elevated batch test.

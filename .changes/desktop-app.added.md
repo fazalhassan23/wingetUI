@@ -3,3 +3,4 @@ The Updates list includes row checkboxes, select-all and clear controls, and a s
 Restart as administrator starts a fresh elevated session and requests silent installer mode.
 Elevated sessions retry WinGet COM activation with the signed-in user registration when standard activation reports class not registered.
 Update checkboxes retain independent selections and the batch uses only checked packages.
+Administrator sessions run WinGet in-process so supported installers can use the session elevation.
