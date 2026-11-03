@@ -10,7 +10,11 @@
  </Window.Resources>
  <DockPanel Margin="16">
   <StackPanel DockPanel.Dock="Top" Margin="0,0,0,12">
-   <TextBlock Text="WingetUI" FontSize="28" FontWeight="SemiBold"/>
+   <DockPanel>
+    <Button x:Name="ElevateButton" DockPanel.Dock="Right" Content="Restart as _administrator"
+     Click="RestartAsAdministrator" Padding="8,4"/>
+    <TextBlock Text="WingetUI" FontSize="28" FontWeight="SemiBold"/>
+   </DockPanel>
    <TextBlock Text="WinGet community source (winget)"/>
   </StackPanel>
   <StackPanel DockPanel.Dock="Bottom" Margin="0,8,0,0">

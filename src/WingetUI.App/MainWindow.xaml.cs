@@ -1,3 +1,6 @@
+using System.ComponentModel;
+using System.Diagnostics;
+using System.Security.Principal;
 using System.Windows;
 using WingetUI.Core;
 using WingetUI.WinGet;
@@ -12,6 +15,12 @@ public partial class MainWindow : Window
     {
         InitializeComponent();
         DataContext = model;
+        using var identity = WindowsIdentity.GetCurrent();
+        if (new WindowsPrincipal(identity).IsInRole(WindowsBuiltInRole.Administrator))
+        {
+            ElevateButton.Visibility = Visibility.Collapsed;
+            Title = "WingetUI (Administrator)";
+        }
         Loaded += async (_, _) =>
         {
             model.LoadHistory();
@@ -23,6 +32,43 @@ public partial class MainWindow : Window
                 args.Cancel = MessageBox.Show(this, "An operation is active. Closing may leave its outcome unknown. Close now?",
                     "WingetUI", MessageBoxButton.YesNo, MessageBoxImage.Warning, MessageBoxResult.No) != MessageBoxResult.Yes;
         };
+    }
+
+    private void RestartAsAdministrator(object sender, RoutedEventArgs e)
+    {
+        if (model.Busy)
+        {
+            MessageBox.Show(this, "Wait for the active queue to finish before restarting.");
+            return;
+        }
+
+        if (MessageBox.Show(this,
+                "Restart WingetUI with administrator privileges and request silent installers where supported? " +
+                "The app will refresh and ask you to select and confirm your packages again. " +
+                "Using another Windows account can change the packages and sources you see.",
+                "Restart as administrator", MessageBoxButton.YesNo, MessageBoxImage.Question,
+                MessageBoxResult.No) != MessageBoxResult.Yes)
+            return;
+
+        try
+        {
+            using var process = Process.Start(new ProcessStartInfo(Environment.ProcessPath!)
+            {
+                UseShellExecute = true,
+                Verb = "runas",
+                Arguments = "--elevated-restart"
+            });
+            if (process is not null)
+                Close();
+        }
+        catch (Win32Exception error) when (error.NativeErrorCode == 1223)
+        {
+            MessageBox.Show(this, "Administrator restart was cancelled.");
+        }
+        catch (Win32Exception error)
+        {
+            MessageBox.Show(this, $"Administrator restart failed (Windows error {error.NativeErrorCode}).");
+        }
     }
 
     private void SelectAllUpdates(object sender, RoutedEventArgs e) => UpdatesGrid.SelectAll();

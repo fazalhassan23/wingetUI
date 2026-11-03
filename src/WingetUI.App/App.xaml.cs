@@ -12,6 +12,8 @@ public partial class App : Application
     {
         using var identity = WindowsIdentity.GetCurrent();
         instance = new Mutex(true, $@"Local\WingetUI-{identity.User!.Value}", out ownsInstance);
+        if (!ownsInstance && e.Args.Contains("--elevated-restart"))
+            ownsInstance = instance.WaitOne(TimeSpan.FromSeconds(10));
         if (!ownsInstance)
         {
             MessageBox.Show("WingetUI is already running for this account.");

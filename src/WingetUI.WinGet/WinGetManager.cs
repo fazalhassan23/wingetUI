@@ -1,3 +1,4 @@
+using System.Security.Principal;
 using System.Runtime.InteropServices;
 using Microsoft.Management.Deployment;
 using WingetUI.Core;
@@ -106,9 +107,11 @@ public sealed class WinGetManager : IPackageManager
         if (versionId is null)
             return new OperationResult("Skipped", "The confirmed version is no longer available.");
 
+        using var identity = WindowsIdentity.GetCurrent();
+        bool elevated = new WindowsPrincipal(identity).IsInRole(WindowsBuiltInRole.Administrator);
         var installOptions = new InstallOptions
         {
-            PackageInstallMode = PackageInstallMode.Interactive,
+            PackageInstallMode = elevated ? PackageInstallMode.Silent : PackageInstallMode.Interactive,
             PackageVersionId = versionId
         };
         progress.Report(new("Running", null));
