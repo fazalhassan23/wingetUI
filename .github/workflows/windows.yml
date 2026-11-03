@@ -1,0 +1,36 @@
+name: Windows validation
+
+on:
+  pull_request:
+    branches: [staging, main]
+    types: [opened, reopened, synchronize, ready_for_review, edited, labeled, unlabeled]
+  push:
+    branches: [staging, main]
+
+permissions:
+  contents: read
+
+jobs:
+  publish:
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: 10.0.x
+      - name: Build smoke test
+        run: dotnet build tests/WingetUI.Smoke -c Release
+      - name: Publish Windows x64
+        run: dotnet publish src/WingetUI.App/WingetUI.App.csproj -c Release -r win-x64 --self-contained true -o publish
+      - name: Validate and package output
+        shell: pwsh
+        run: |
+          foreach ($path in 'publish/WingetUI.exe', 'publish/Microsoft.Management.Deployment.dll', 'README.md', 'AGENTS.md') {
+            if (-not (Test-Path -LiteralPath $path -PathType Leaf)) { throw "Missing $path" }
+          }
+          git diff --check
+          Compress-Archive -Path publish/* -DestinationPath WingetUI-win-x64.zip
+      - uses: actions/upload-artifact@v4
+        with:
+          name: WingetUI-win-x64
+          path: WingetUI-win-x64.zip
