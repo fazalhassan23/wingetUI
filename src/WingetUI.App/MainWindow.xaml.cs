@@ -15,6 +15,11 @@ public partial class MainWindow : Window
     {
         InitializeComponent();
         DataContext = model;
+        model.PropertyChanged += (_, args) =>
+        {
+            if (args.PropertyName == nameof(MainViewModel.Updates))
+                UpdateSelectionCount();
+        };
         using var identity = WindowsIdentity.GetCurrent();
         if (new WindowsPrincipal(identity).IsInRole(WindowsBuiltInRole.Administrator))
         {
@@ -71,19 +76,33 @@ public partial class MainWindow : Window
         }
     }
 
-    private void SelectAllUpdates(object sender, RoutedEventArgs e) => UpdatesGrid.SelectAll();
+    private void SelectAllUpdates(object sender, RoutedEventArgs e) => SetUpdateChecks(true);
 
-    private void ClearUpdates(object sender, RoutedEventArgs e) => UpdatesGrid.UnselectAll();
+    private void ClearUpdates(object sender, RoutedEventArgs e) => SetUpdateChecks(false);
 
-    private void UpdateSelectionChanged(object sender, System.Windows.Controls.SelectionChangedEventArgs e)
+    private void SetUpdateChecks(bool value)
     {
-        int count = UpdatesGrid.SelectedItems.Count;
+        foreach (var row in model.Updates)
+            row.IsChecked = value;
+        UpdateSelectionCount();
+    }
+
+    private void UpdateCheckboxClicked(object sender, RoutedEventArgs e)
+    {
+        if (sender is System.Windows.Controls.CheckBox { DataContext: UpdateRow row } checkbox)
+            row.IsChecked = checkbox.IsChecked == true;
+        UpdateSelectionCount();
+    }
+
+    private void UpdateSelectionCount()
+    {
+        int count = model.Updates.Count(row => row.IsChecked);
         UpgradeButton.Content = $"_Upgrade selected ({count})";
         UpgradeButton.IsEnabled = count > 0;
     }
 
     private async void UpgradeSelected(object sender, RoutedEventArgs e) =>
-        await ConfirmAsync(UpdatesGrid.SelectedItems.Cast<Package>().ToArray(), upgrade: true);
+        await ConfirmAsync(model.Updates.Where(row => row.IsChecked).Select(row => row.Package).ToArray(), upgrade: true);
 
     private async void InstallSelected(object sender, RoutedEventArgs e)
     {
