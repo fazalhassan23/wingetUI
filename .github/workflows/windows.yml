@@ -30,9 +30,11 @@ jobs:
       - name: Validate and package output
         shell: pwsh
         run: |
-          foreach ($path in 'publish/WingetUI.exe', 'publish/Microsoft.Management.Deployment.dll', 'README.md', 'AGENTS.md') {
+          foreach ($path in 'publish/WingetUI.exe', 'README.md', 'AGENTS.md') {
             if (-not (Test-Path -LiteralPath $path -PathType Leaf)) { throw "Missing $path" }
           }
+          $unexpected = Get-ChildItem -LiteralPath publish -File | Where-Object Name -ne 'WingetUI.exe'
+          if ($unexpected) { throw "Single-file publish contained unexpected files: $($unexpected.Name -join ', ')" }
           git diff --check
           Compress-Archive -Path publish/* -DestinationPath WingetUI-win-x64.zip
       - uses: actions/upload-artifact@v4

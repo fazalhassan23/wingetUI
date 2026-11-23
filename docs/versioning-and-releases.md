@@ -10,9 +10,11 @@ During `0.x`, the product is a preview and compatibility may evolve, but incompa
 
 ## Current status
 
-No stable version, immutable release tag, or published GitHub release is currently documented. CI artifacts are development outputs and are not releases.
+Version `0.1.0` is the first development-preview release. `Directory.Build.props` is the authoritative release-version source; assembly and file metadata derive from it. The immutable release tag is `v0.1.0`.
 
-Before the first release, establish one authoritative version source in the build, derive display and package metadata from it, and document any prerelease suffix.
+The 0.1.0 binaries are unsigned because the project has no verified code-signing certificate. Release notes and download guidance must state this limitation and provide SHA-256 checksums.
+
+CI artifacts remain development outputs unless they are explicitly attached to a tagged GitHub release.
 
 ## Release preparation
 
