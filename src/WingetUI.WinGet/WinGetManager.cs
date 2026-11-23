@@ -87,7 +87,7 @@ public sealed class WinGetManager : IPackageManager
         var target = matches[0].CatalogPackage;
         var version = target.DefaultInstallVersion;
         if (package.Available is null || version?.Version != package.Available ||
-            (upgrade && (!target.IsUpdateAvailable || target.InstalledVersion?.Version != package.Installed)) ||
+            (upgrade && (!target.IsUpdateAvailable || !package.MatchesInstalledVersion(target.InstalledVersion?.Version))) ||
             (!upgrade && Find(Connect(manager, installed: true), options).Count != 0))
             return new OperationResult("Skipped", "Package state changed. Refresh and confirm again.");
 
@@ -132,7 +132,7 @@ public sealed class WinGetManager : IPackageManager
     {
         var result = catalog.FindPackages(options);
         if (result.Status != FindPackagesResultStatus.Ok)
-            throw new InvalidOperationException($"WinGet search failed: {result.Status}");
+            throw new PackageBackendUnavailableException($"WinGet search failed: {result.Status}");
         return result.Matches;
     }
 
@@ -148,7 +148,7 @@ public sealed class WinGetManager : IPackageManager
 
         var result = reference.Connect();
         if (result.Status != ConnectResultStatus.Ok)
-            throw new InvalidOperationException($"WinGet community source failed to connect: {result.Status}");
+            throw new PackageBackendUnavailableException($"WinGet community source failed to connect: {result.Status}");
         return result.PackageCatalog;
     }
 

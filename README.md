@@ -45,3 +45,18 @@ Administrator sessions use WinGet's in-process COM engine. To check catalog acce
 During a batch, Updates keeps its rows visible and shows per-package progress. Select an Activity entry and use **Copy details** for timestamps, versions, and the result.
 The desktop layout uses a navigation sidebar, larger package rows, and a highlighted primary upgrade action. Windows system colors supply the interface palette.
 Use the checkbox above the update rows to select or clear all updates. A filled intermediate state indicates that only some updates are selected.
+## Audit corrections and compact theme
+
+Dark mode is enabled at launch. **Toggle theme** switches to the Windows system palette for the current session. When Windows high contrast is enabled at startup, the app uses system colors.
+
+Package rows are 36 pixels high. Update outcomes remain associated with packages that remain in the refreshed list. Activity retains the full result for packages removed from Updates after a successful upgrade.
+
+History retains every unfinished operation and the latest 100 terminal records. Invalid null records are ignored during recovery. Interrupted operations remain unknown and require inventory review. Package-local exceptions continue the batch. Catalog availability failures stop remaining work.
+
+Run deterministic checks without changing installed packages:
+
+```powershell
+dotnet run --project tests/WingetUI.Tests -c Release
+```
+
+These cover unknown-version matching, large-batch persistence, null history, interrupted operations, continuation after a package exception, and row outcomes after refresh.

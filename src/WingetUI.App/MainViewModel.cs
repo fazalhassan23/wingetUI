@@ -7,10 +7,10 @@ using WingetUI.Core;
 
 namespace WingetUI.App;
 
-public partial class MainViewModel(IPackageManager backend) : ObservableObject
+public partial class MainViewModel(IPackageManager backend, string? historyPath = null) : ObservableObject
 {
     private readonly Queue<ActivityEntry> queue = new();
-    private static readonly string HistoryPath = Path.Combine(
+    private readonly string HistoryPath = historyPath ?? Path.Combine(
         Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "WingetUI", "activity.json");
     private CancellationTokenSource? search;
     private bool inventoryCurrent;
@@ -38,7 +38,7 @@ public partial class MainViewModel(IPackageManager backend) : ObservableObject
             if (!File.Exists(HistoryPath))
                 return;
             var entries = JsonSerializer.Deserialize<ActivityEntry[]>(File.ReadAllText(HistoryPath)) ?? [];
-            foreach (var entry in entries.OrderByDescending(entry => entry.Created).Take(100))
+            foreach (var entry in entries.Where(entry => entry?.Package is not null).OrderByDescending(entry => entry.Created))
             {
                 if (entry.Status is "Queued" or "Resolving" or "Running")
                 {
@@ -64,7 +64,11 @@ public partial class MainViewModel(IPackageManager backend) : ObservableObject
         {
             Installed = await backend.ListInstalledAsync(CancellationToken.None);
             Updates = Installed.Where(package => package.CanUpgrade && package.Source == "winget" && package.Available is not null)
-                .Select(package => new UpdateRow(package)).ToArray();
+                .Select(package => new UpdateRow(package)
+                {
+                    Operation = Activity.FirstOrDefault(entry => entry.Package.Id == package.Id &&
+                        entry.Package.Source == package.Source)
+                }).ToArray();
             inventoryCurrent = true;
             LastRefresh = $"Refreshed at {DateTime.Now:t}";
             Status = Updates.Count == 0 ? "No updates found." : $"{Updates.Count} updates available.";
@@ -176,11 +180,16 @@ public partial class MainViewModel(IPackageManager backend) : ObservableObject
                     item.Status = result.Status;
                     item.Detail = result.Detail;
                 }
+                catch (OperationCanceledException)
+                {
+                    item.Status = "Cancelled";
+                    item.Detail = "WinGet reported cancellation.";
+                }
                 catch (Exception error)
                 {
                     item.Status = "Unknown";
                     item.Detail = $"WinGet call failed (0x{error.HResult:X8}). Check inventory before retrying.";
-                    foreach (var pending in queue.Where(pending => pending.Status == "Queued"))
+                    foreach (var pending in queue.Where(pending => pending.Status == "Queued" && error is PackageBackendUnavailableException))
                     {
                         pending.Status = "Skipped";
                         pending.Detail = "Queue stopped after a backend failure.";
@@ -207,7 +216,8 @@ public partial class MainViewModel(IPackageManager backend) : ObservableObject
         {
             Directory.CreateDirectory(Path.GetDirectoryName(HistoryPath)!);
             var temporary = HistoryPath + ".tmp";
-            File.WriteAllText(temporary, JsonSerializer.Serialize(Activity.Take(100)));
+            File.WriteAllText(temporary, JsonSerializer.Serialize(Activity.Where(entry => entry.Status is "Queued" or "Resolving" or "Running")
+                .Concat(Activity.Where(entry => entry.Status is not ("Queued" or "Resolving" or "Running")).Take(100))));
             File.Move(temporary, HistoryPath, overwrite: true);
         }
         catch (Exception error) when (error is IOException or UnauthorizedAccessException)

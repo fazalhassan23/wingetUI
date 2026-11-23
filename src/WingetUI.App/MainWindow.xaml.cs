@@ -14,6 +14,8 @@ public partial class MainWindow : Window
     public MainWindow()
     {
         InitializeComponent();
+        if (SystemParameters.HighContrast)
+            ApplyLightTheme();
         DataContext = model;
         model.PropertyChanged += (_, args) =>
         {
@@ -37,6 +39,33 @@ public partial class MainWindow : Window
                 args.Cancel = MessageBox.Show(this, "An operation is active. Closing may leave its outcome unknown. Close now?",
                     "WingetUI", MessageBoxButton.YesNo, MessageBoxImage.Warning, MessageBoxResult.No) != MessageBoxResult.Yes;
         };
+    }
+
+    private readonly Dictionary<object, object> darkResources = new();
+    private bool lightTheme;
+
+    private void ApplyLightTheme()
+    {
+        foreach (var key in Resources.Keys.Cast<object>().Where(key => key is ResourceKey).ToArray())
+        {
+            darkResources[key] = Resources[key];
+            Resources.Remove(key);
+        }
+        lightTheme = true;
+    }
+
+    private void ToggleTheme(object sender, RoutedEventArgs e)
+    {
+        if (SystemParameters.HighContrast)
+            return;
+        if (!lightTheme)
+            ApplyLightTheme();
+        else
+        {
+            foreach (var resource in darkResources)
+                Resources[resource.Key] = resource.Value;
+            lightTheme = false;
+        }
     }
 
     private void RestartAsAdministrator(object sender, RoutedEventArgs e)
