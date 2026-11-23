@@ -5,3 +5,4 @@ Elevated sessions retry WinGet COM activation with the signed-in user registrati
 Update checkboxes retain independent selections and the batch uses only checked packages.
 Administrator sessions run WinGet in-process so supported installers can use the session elevation.
 Added per-package upgrade progress and a sortable Activity log with copyable details.
+Refreshed navigation, spacing, table readability, and button styling for the desktop interface.
