@@ -1,8 +1,7 @@
-using System.ComponentModel;
-using System.Diagnostics;
-using System.Security.Principal;
 using System.Windows;
-using WingetUI.Core;
+using WingetUI.App.Models;
+using WingetUI.App.Services;
+using WingetUI.Core.Packages;
 using WingetUI.WinGet;
 
 namespace WingetUI.App;
@@ -10,20 +9,21 @@ namespace WingetUI.App;
 public partial class MainWindow : Window
 {
     private readonly MainViewModel model = new(new WinGetManager());
+    private ThemeManager theme = null!;
 
     public MainWindow()
     {
         InitializeComponent();
+        theme = new ThemeManager(Resources);
         if (SystemParameters.HighContrast)
-            ApplyLightTheme();
+            theme.ApplySystemTheme();
         DataContext = model;
         model.PropertyChanged += (_, args) =>
         {
             if (args.PropertyName == nameof(MainViewModel.Updates))
                 UpdateSelectionCount();
         };
-        using var identity = WindowsIdentity.GetCurrent();
-        if (new WindowsPrincipal(identity).IsInRole(WindowsBuiltInRole.Administrator))
+        if (AdministratorSession.IsElevated)
         {
             ElevateButton.Visibility = Visibility.Collapsed;
             Title = "WingetUI (Administrator)";
@@ -41,32 +41,7 @@ public partial class MainWindow : Window
         };
     }
 
-    private readonly Dictionary<object, object> darkResources = new();
-    private bool lightTheme;
-
-    private void ApplyLightTheme()
-    {
-        foreach (var key in Resources.Keys.Cast<object>().Where(key => key is ResourceKey).ToArray())
-        {
-            darkResources[key] = Resources[key];
-            Resources.Remove(key);
-        }
-        lightTheme = true;
-    }
-
-    private void ToggleTheme(object sender, RoutedEventArgs e)
-    {
-        if (SystemParameters.HighContrast)
-            return;
-        if (!lightTheme)
-            ApplyLightTheme();
-        else
-        {
-            foreach (var resource in darkResources)
-                Resources[resource.Key] = resource.Value;
-            lightTheme = false;
-        }
-    }
+    private void ToggleTheme(object sender, RoutedEventArgs e) => theme.Toggle();
 
     private void RestartAsAdministrator(object sender, RoutedEventArgs e)
     {
@@ -84,24 +59,18 @@ public partial class MainWindow : Window
                 MessageBoxResult.No) != MessageBoxResult.Yes)
             return;
 
-        try
+        var outcome = AdministratorSession.RestartElevated();
+        switch (outcome.Result)
         {
-            using var process = Process.Start(new ProcessStartInfo(Environment.ProcessPath!)
-            {
-                UseShellExecute = true,
-                Verb = "runas",
-                Arguments = "--elevated-restart"
-            });
-            if (process is not null)
+            case AdministratorRestartResult.Started:
                 Close();
-        }
-        catch (Win32Exception error) when (error.NativeErrorCode == 1223)
-        {
-            MessageBox.Show(this, "Administrator restart was cancelled.");
-        }
-        catch (Win32Exception error)
-        {
-            MessageBox.Show(this, $"Administrator restart failed (Windows error {error.NativeErrorCode}).");
+                break;
+            case AdministratorRestartResult.Cancelled:
+                MessageBox.Show(this, "Administrator restart was cancelled.");
+                break;
+            default:
+                MessageBox.Show(this, $"Administrator restart failed (Windows error {outcome.WindowsError ?? 0}).");
+                break;
         }
     }
 
