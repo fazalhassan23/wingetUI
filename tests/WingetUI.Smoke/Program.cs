@@ -1,4 +1,6 @@
 using WingetUI.WinGet;
+using WingetUI.Core.Operations;
+using WingetUI.Core.Packages;
 
 if (args.Contains("--check-in-process"))
 {
@@ -22,7 +24,7 @@ if (inventory.Count == 0)
 Console.WriteLine($"Search matched {match.Id} {match.Available}. Inventory: {inventory.Count}; update candidates: {inventory.Count(package => package.CanUpgrade)}.");
 
 var stale = match with { Available = "smoke-test-unavailable-version" };
-var result = await manager.ExecuteAsync(stale, upgrade: false, new Progress<WingetUI.Core.OperationProgress>(), CancellationToken.None);
+var result = await manager.ExecuteAsync(stale, upgrade: false, new Progress<OperationProgress>(), CancellationToken.None);
 if (result.Status != "Skipped")
     throw new InvalidOperationException("A stale confirmed version must be skipped.");
 Console.WriteLine("Stale version was skipped before installer execution.");

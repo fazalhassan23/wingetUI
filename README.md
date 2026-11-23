@@ -31,7 +31,7 @@ flowchart LR
     COM --> Installer[Package installer]
 ```
 
-WPF owns the confirmation dialog and queue. The adapter keeps COM types on its side of the contract and rechecks package identity and version before calling WinGet. On restart, unfinished operations appear as unknown and inventory refreshes. The application never retries them automatically.
+WPF owns confirmation dialogs and presentation state. Application services own the serial queue and local history, while the adapter keeps COM types on its side of the contract and rechecks package identity and version before calling WinGet. On restart, unfinished operations appear as unknown and inventory refreshes. The application never retries them automatically. See [the architecture guide](docs/architecture.md) and [refactoring map](docs/refactoring.md).
 
 ## Troubleshooting and verification status
 

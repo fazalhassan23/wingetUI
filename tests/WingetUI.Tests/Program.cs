@@ -1,13 +1,15 @@
 using System.IO;
 using System.Text.Json;
 using WingetUI.App;
-using WingetUI.Core;
+using WingetUI.App.Models;
+using WingetUI.Core.Operations;
+using WingetUI.Core.Packages;
 
 var unknown = new Package("Unknown", "Test.Unknown", "winget", "Unknown", "2", true);
 Require(unknown.MatchesInstalledVersion(null), "An unchanged unknown version must match.");
 Require(!unknown.MatchesInstalledVersion("1"), "A newly known version requires confirmation.");
-Require(!packagesPlaceholder(), "Version changes must be rejected.");
-static bool packagesPlaceholder() => new Package("Known", "Test.Known", "winget", "1", "2", true).MatchesInstalledVersion("2");
+var known = new Package("Known", "Test.Known", "winget", "1", "2", true);
+Require(!known.MatchesInstalledVersion("2"), "Version changes must be rejected.");
 Console.WriteLine("PASS unknown and changed installed-version matching");
 
 var directory = Path.Combine(Path.GetTempPath(), "WingetUI-tests-" + Guid.NewGuid().ToString("N"));

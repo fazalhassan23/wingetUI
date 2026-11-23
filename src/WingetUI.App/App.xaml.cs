@@ -1,20 +1,16 @@
-using System.Security.Principal;
 using System.Windows;
+using WingetUI.App.Services;
 
 namespace WingetUI.App;
 
 public partial class App : Application
 {
-    private Mutex? instance;
-    private bool ownsInstance;
+    private SingleInstanceGuard? instance;
 
     protected override void OnStartup(StartupEventArgs e)
     {
-        using var identity = WindowsIdentity.GetCurrent();
-        instance = new Mutex(true, $@"Local\WingetUI-{identity.User!.Value}", out ownsInstance);
-        if (!ownsInstance && e.Args.Contains("--elevated-restart"))
-            ownsInstance = instance.WaitOne(TimeSpan.FromSeconds(10));
-        if (!ownsInstance)
+        instance = SingleInstanceGuard.Acquire(e.Args.Contains("--elevated-restart"));
+        if (!instance.IsAcquired)
         {
             MessageBox.Show("WingetUI is already running for this account.");
             Shutdown();
@@ -25,8 +21,6 @@ public partial class App : Application
 
     protected override void OnExit(ExitEventArgs e)
     {
-        if (ownsInstance)
-            instance?.ReleaseMutex();
         instance?.Dispose();
         base.OnExit(e);
     }
