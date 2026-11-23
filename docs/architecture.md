@@ -2,6 +2,8 @@
 
 WingetUI is split into three production projects and two executable verification projects.
 
+Additional operation and recovery diagrams are available in [system diagrams](diagrams.md).
+
 ## Components
 
 ```mermaid

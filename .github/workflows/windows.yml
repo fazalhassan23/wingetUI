@@ -22,6 +22,9 @@ jobs:
         run: dotnet run --project tests/WingetUI.Tests -c Release
       - name: Build smoke test
         run: dotnet build tests/WingetUI.Smoke -c Release
+      - name: Validate documentation
+        shell: pwsh
+        run: ./tools/Validate-Documentation.ps1
       - name: Publish Windows x64
         run: dotnet publish src/WingetUI.App/WingetUI.App.csproj -c Release -r win-x64 --self-contained true -o publish
       - name: Validate and package output

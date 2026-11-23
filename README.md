@@ -2,6 +2,8 @@
 
 WingetUI is a Windows 11 x64 desktop client for the WinGet community source. It opens on Updates and includes Search, Installed, and Activity. Install and upgrade requests show the exact target and version before they enter a serial queue.
 
+> Project status: development preview. CI artifacts are not published releases.
+
 ## Run a local build
 
 Use Windows 11 x64 with current App Installer registered for your account. Extract the entire ZIP and double-click **WingetUI.exe**. The ZIP bundles .NET. Keep the supporting files next to the executable. Delete the extracted folder to remove the application. Delete the WingetUI folder under LocalAppData to remove its local activity history.
@@ -32,6 +34,23 @@ flowchart LR
 ```
 
 WPF owns confirmation dialogs and presentation state. Application services own the serial queue and local history, while the adapter keeps COM types on its side of the contract and rechecks package identity and version before calling WinGet. On restart, unfinished operations appear as unknown and inventory refreshes. The application never retries them automatically. See [the architecture guide](docs/architecture.md) and [refactoring map](docs/refactoring.md).
+
+## Documentation
+
+- [User guide](docs/user-guide.md)
+- [Troubleshooting](docs/troubleshooting.md)
+- [Configuration and local data](docs/configuration.md)
+- [Architecture](docs/architecture.md)
+- [System diagrams](docs/diagrams.md)
+- [Local data schema](docs/schema.md)
+- [Accessibility and privacy](docs/accessibility-and-privacy.md)
+- [Development](docs/development.md)
+- [Testing](docs/testing.md)
+- [Contributing](CONTRIBUTING.md)
+- [Git workflow](docs/git-workflow.md)
+- [Versioning and releases](docs/versioning-and-releases.md)
+- [Security policy](SECURITY.md)
+- [Changelog](CHANGELOG.md)
 
 ## Troubleshooting and verification status
 
