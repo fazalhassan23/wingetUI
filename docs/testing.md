@@ -16,6 +16,7 @@ These checks do not change installed packages. They cover:
 - Preservation of row outcomes after refresh.
 - Ignoring invalid null history records.
 - Recovery of interrupted operations as unknown.
+- Download speed, estimated-time calculation, and readable progress formatting.
 
 ## Build checks
 

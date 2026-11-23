@@ -119,6 +119,7 @@ public sealed class PackageOperationQueue(IPackageManager backend, IActivityHist
         entry.Status = OperationStatuses.Resolving;
         Persist();
 
+        var downloadTracker = new DownloadProgressTracker();
         var progress = new Progress<OperationProgress>(update =>
         {
             if (entry.Status is not (OperationStatuses.Resolving or OperationStatuses.Running))
@@ -127,6 +128,17 @@ public sealed class PackageOperationQueue(IPackageManager backend, IActivityHist
             entry.Phase = update.Phase;
             entry.ProgressValue = update.Percentage ?? 0;
             entry.ProgressIndeterminate = update.Percentage is null;
+            if (update.BytesDownloaded is { } downloaded)
+            {
+                var metrics = downloadTracker.Update(
+                    downloaded,
+                    update.BytesRequired ?? 0,
+                    DateTimeOffset.UtcNow);
+                entry.DownloadedBytes = metrics.DownloadedBytes;
+                entry.TotalBytes = metrics.TotalBytes;
+                entry.BytesPerSecond = metrics.BytesPerSecond;
+                entry.EstimatedRemaining = metrics.EstimatedRemaining;
+            }
             if (update.Phase != OperationStatuses.Resolving && entry.Status != OperationStatuses.Running)
             {
                 entry.Status = OperationStatuses.Running;
