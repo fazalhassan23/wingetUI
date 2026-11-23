@@ -1,5 +1,5 @@
 <Window x:Class="WingetUI.App.MainWindow" xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
- xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" Title="WingetUI" Width="1180" Height="720" MinWidth="920" MinHeight="540" FontFamily="Segoe UI" FontSize="13" Background="{DynamicResource {x:Static SystemColors.ControlBrushKey}}" Foreground="{DynamicResource {x:Static SystemColors.ControlTextBrushKey}}">
+ xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" Title="WingetUI" Icon="Assets/WingetUI.ico" Width="1180" Height="720" MinWidth="920" MinHeight="540" FontFamily="Segoe UI" FontSize="13" Background="{DynamicResource {x:Static SystemColors.ControlBrushKey}}" Foreground="{DynamicResource {x:Static SystemColors.ControlTextBrushKey}}">
  <Window.Resources>
   <SolidColorBrush x:Key="{x:Static SystemColors.ControlBrushKey}" Color="#171B22"/>
   <SolidColorBrush x:Key="{x:Static SystemColors.WindowBrushKey}" Color="#202630"/>

@@ -2,11 +2,17 @@
 
 WingetUI is a Windows 11 x64 desktop client for the WinGet community source. It opens on Updates and includes Search, Installed, and Activity. Install and upgrade requests show the exact target and version before they enter a serial queue.
 
-> Project status: development preview. CI artifacts are not published releases.
+> Project status: `0.1.0` development preview.
+
+## Download
+
+Download `WingetUI-0.1.0-win-x64.exe` from the [GitHub release](https://github.com/fazalhassan23/wingetUI/releases/tag/v0.1.0). It is a self-contained single-file application for Windows 11 x64 and does not require a separate .NET installation. SHA-256 checksums and a ZIP alternative are provided with the release.
+
+The 0.1.0 preview is not code-signed. Windows may show a SmartScreen warning; verify the SHA-256 checksum from the release assets before running it. No verified publisher certificate is currently available to this project.
 
 ## Run a local build
 
-Use Windows 11 x64 with current App Installer registered for your account. Extract the entire ZIP and double-click **WingetUI.exe**. The ZIP bundles .NET. Keep the supporting files next to the executable. Delete the extracted folder to remove the application. Delete the WingetUI folder under LocalAppData to remove its local activity history.
+Use Windows 11 x64 with current App Installer registered for your account. Run the downloaded executable, or extract the ZIP and double-click **WingetUI.exe**. Delete the executable or extracted folder to remove the application. Delete the WingetUI folder under LocalAppData to remove its local activity history.
 
 ## Build and validate
 

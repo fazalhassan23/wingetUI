@@ -3,10 +3,15 @@
     <OutputType>WinExe</OutputType><TargetFramework>net10.0-windows10.0.26100.0</TargetFramework>
     <UseWPF>true</UseWPF><AssemblyName>WingetUI</AssemblyName><ImplicitUsings>enable</ImplicitUsings><Nullable>enable</Nullable>
     <RuntimeIdentifier>win-x64</RuntimeIdentifier><SelfContained>true</SelfContained><ApplicationManifest>app.manifest</ApplicationManifest>
+    <ApplicationIcon>Assets\WingetUI.ico</ApplicationIcon>
+    <PublishSingleFile>true</PublishSingleFile><IncludeNativeLibrariesForSelfExtract>true</IncludeNativeLibrariesForSelfExtract>
+    <IncludeAllContentForSelfExtract>true</IncludeAllContentForSelfExtract>
+    <EnableCompressionInSingleFile>true</EnableCompressionInSingleFile><DebugType>none</DebugType><DebugSymbols>false</DebugSymbols>
   </PropertyGroup>
   <ItemGroup>
     <PackageReference Include="CommunityToolkit.Mvvm" Version="8.4.0" />
     <ProjectReference Include="../WingetUI.WinGet/WingetUI.WinGet.csproj" />
   </ItemGroup>
   <ItemGroup><PackageReference Include="Microsoft.WindowsPackageManager.ComInterop" Version="1.29.380" /></ItemGroup>
+  <ItemGroup><Resource Include="Assets\WingetUI.ico" /><None Include="Assets\WingetUI.png" /></ItemGroup>
 </Project>

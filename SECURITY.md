@@ -20,5 +20,6 @@ Include the affected commit or version, Windows and App Installer versions, impa
 - An elevated session requests silent installer mode, but individual installers and Windows policy can still display prompts.
 - Package identity, source, installed version, and target version are revalidated immediately before execution.
 - Activity history is stored locally and can reveal package names, identifiers, versions, timestamps, and operation outcomes.
+- The 0.1.0 preview executable is not code-signed. Verify its SHA-256 checksum against the GitHub release asset before running it.
 
 See [configuration and data](docs/configuration.md) for storage details and [troubleshooting](docs/troubleshooting.md) for safe diagnostics.
