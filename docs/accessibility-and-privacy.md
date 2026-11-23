@@ -4,7 +4,7 @@
 
 WingetUI uses Windows system fonts, system color resources, keyboard access keys, named grids and controls, and polite live status announcements. Windows high contrast is detected at startup and replaces the custom dark resources with system colors.
 
-The minimum application size is 920 by 540 pixels. Package tables support keyboard row navigation, and selection checkboxes have accessible names tied to package names.
+The minimum application size is 920 by 540 pixels. Package tables support keyboard row navigation, selection checkboxes have accessible names tied to package names, and long package values retain their full text in tooltips when the visible cell is clipped.
 
 Current limitations:
 

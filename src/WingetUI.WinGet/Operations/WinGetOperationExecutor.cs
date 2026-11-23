@@ -38,10 +38,13 @@ internal sealed class WinGetOperationExecutor(PackageManager manager, WinGetCata
         var result = operation.AsTask(cancellationToken, new Progress<InstallProgress>(value =>
         {
             var phase = value.State.ToString();
-            double? percentage = phase == "Downloading" && value.DownloadProgress is > 0 and <= 1
-                ? value.DownloadProgress * 100
-                : null;
-            progress.Report(new(phase, percentage));
+            double? percentage = phase switch
+            {
+                "Downloading" when value.DownloadProgress is >= 0 and <= 1 => value.DownloadProgress * 100,
+                "Installing" when value.InstallationProgress is >= 0 and <= 1 => value.InstallationProgress * 100,
+                _ => null
+            };
+            progress.Report(new(phase, percentage, value.BytesDownloaded, value.BytesRequired));
         })).GetAwaiter().GetResult();
 
         var status = result.RebootRequired

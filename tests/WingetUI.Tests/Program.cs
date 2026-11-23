@@ -2,6 +2,7 @@ using System.IO;
 using System.Text.Json;
 using WingetUI.App;
 using WingetUI.App.Models;
+using WingetUI.App.Services;
 using WingetUI.Core.Operations;
 using WingetUI.Core.Packages;
 
@@ -11,6 +12,29 @@ Require(!unknown.MatchesInstalledVersion("1"), "A newly known version requires c
 var known = new Package("Known", "Test.Known", "winget", "1", "2", true);
 Require(!known.MatchesInstalledVersion("2"), "Version changes must be rejected.");
 Console.WriteLine("PASS unknown and changed installed-version matching");
+
+var tracker = new DownloadProgressTracker();
+var observedAt = DateTimeOffset.Parse("2026-01-01T00:00:00Z");
+tracker.Update(0, 10 * 1024 * 1024, observedAt);
+var downloadMetrics = tracker.Update(1024 * 1024, 10 * 1024 * 1024, observedAt.AddSeconds(1));
+Require(Math.Abs(downloadMetrics.BytesPerSecond - (1024 * 1024)) < 1,
+    "Download speed must derive from transferred bytes and elapsed time.");
+Require(downloadMetrics.EstimatedRemaining == TimeSpan.FromSeconds(9),
+    "Download ETA must derive from remaining bytes and smoothed speed.");
+var progressEntry = new ActivityEntry(known, true)
+{
+    Status = OperationStatuses.Running,
+    Phase = "Downloading",
+    ProgressIndeterminate = false,
+    ProgressValue = 10,
+    DownloadedBytes = downloadMetrics.DownloadedBytes,
+    TotalBytes = downloadMetrics.TotalBytes,
+    BytesPerSecond = downloadMetrics.BytesPerSecond,
+    EstimatedRemaining = downloadMetrics.EstimatedRemaining
+};
+Require(progressEntry.ProgressDetail.Contains("1 MB/s") && progressEntry.ProgressDetail.Contains("9s left"),
+    "Progress detail must expose readable speed and ETA.");
+Console.WriteLine("PASS download speed, ETA, and progress formatting");
 
 var directory = Path.Combine(Path.GetTempPath(), "WingetUI-tests-" + Guid.NewGuid().ToString("N"));
 Directory.CreateDirectory(directory);

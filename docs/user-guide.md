@@ -27,7 +27,7 @@ WingetUI opens on Updates and refreshes installed-package inventory. Only packag
 4. Review package identifiers, versions, and sources in the confirmation dialog.
 5. Confirm to place the packages into the serial queue.
 
-Packages run one at a time. Each update row shows its current phase and progress when WinGet supplies a percentage.
+Packages run one at a time. Each update row shows its current phase and progress when WinGet supplies a percentage. During downloads, WingetUI also shows transferred size, a smoothed transfer rate, and estimated time remaining when WinGet supplies byte counts. Speed and time remaining are estimates and can change as the connection or package server changes.
 
 ## Search and install
 

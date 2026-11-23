@@ -41,6 +41,7 @@
    <Setter Property="FontWeight" Value="SemiBold"/>
   </Style>
   <Style TargetType="TabItem">
+   <Setter Property="Foreground" Value="{DynamicResource {x:Static SystemColors.ControlTextBrushKey}}"/>
    <Setter Property="MinWidth" Value="128"/>
    <Setter Property="Margin" Value="0,0,12,6"/>
    <Setter Property="Padding" Value="12,9"/>
@@ -78,6 +79,11 @@
     <Setter.Value><ControlTemplate TargetType="DataGridCell"><Border Padding="{TemplateBinding Padding}" Background="{TemplateBinding Background}"><ContentPresenter VerticalAlignment="Center"/></Border></ControlTemplate></Setter.Value>
    </Setter>
   </Style>
+  <Style TargetType="ProgressBar">
+   <Setter Property="Foreground" Value="{DynamicResource {x:Static SystemColors.HighlightBrushKey}}"/>
+   <Setter Property="Background" Value="#343D49"/>
+   <Setter Property="BorderThickness" Value="0"/>
+  </Style>
   <Style TargetType="TextBox">
    <Setter Property="Background" Value="{DynamicResource {x:Static SystemColors.WindowBrushKey}}"/>
    <Setter Property="Foreground" Value="{DynamicResource {x:Static SystemColors.WindowTextBrushKey}}"/>
@@ -113,15 +119,16 @@
    </DockPanel>
    <TextBlock Text="Manage your apps · WinGet community source (winget)" Margin="0,6,0,0"/>
   </StackPanel>
-  <Border DockPanel.Dock="Bottom" Margin="0,18,0,0" Padding="12" CornerRadius="8" Background="{DynamicResource {x:Static SystemColors.WindowBrushKey}}">
+  <Border DockPanel.Dock="Bottom" Margin="0,14,0,0" Padding="12" CornerRadius="8" Background="{DynamicResource {x:Static SystemColors.WindowBrushKey}}">
   <StackPanel>
-   <TextBlock Text="{Binding Status}" TextWrapping="Wrap" AutomationProperties.LiveSetting="Polite"/>
-   <TextBlock Text="{Binding OperationStatus}" TextWrapping="Wrap" AutomationProperties.LiveSetting="Polite"/>
-   <ProgressBar Height="8" Minimum="0" Maximum="100" Value="{Binding Percentage, Mode=OneWay}"
-    IsIndeterminate="{Binding Indeterminate}" AutomationProperties.Name="Package operation progress"/>
+   <TextBlock Text="{Binding Status}" FontWeight="SemiBold" TextWrapping="Wrap" AutomationProperties.LiveSetting="Polite"/>
+   <TextBlock Text="{Binding OperationStatus}" Margin="0,3,0,0" TextWrapping="Wrap" AutomationProperties.LiveSetting="Polite"/>
+   <ProgressBar Height="6" Margin="0,8,0,0" Minimum="0" Maximum="100" Value="{Binding Percentage, Mode=OneWay}"
+    IsIndeterminate="{Binding Indeterminate}" Visibility="{Binding Busy, Converter={StaticResource VisibleWhenTrue}}"
+    AutomationProperties.Name="Current package operation progress"/>
   </StackPanel>
   </Border>
-  <TabControl TabStripPlacement="Left" Background="{DynamicResource {x:Static SystemColors.WindowBrushKey}}" BorderThickness="0" Padding="12">
+  <TabControl TabStripPlacement="Left" Foreground="{DynamicResource {x:Static SystemColors.ControlTextBrushKey}}" Background="{DynamicResource {x:Static SystemColors.WindowBrushKey}}" BorderThickness="0" Padding="12">
    <TabItem Header="_Updates">
     <DockPanel>
      <StackPanel Orientation="Horizontal" DockPanel.Dock="Top" Margin="0,0,0,12">
@@ -148,17 +155,32 @@
          </DataTemplate>
         </DataGridTemplateColumn.CellTemplate>
        </DataGridTemplateColumn>
-       <DataGridTextColumn Header="Name" Binding="{Binding Package.Name}" Width="*" MinWidth="170"/>
-       <DataGridTextColumn Header="Package ID" Binding="{Binding Package.Id}" Width="2*" MinWidth="160"/>
+       <DataGridTemplateColumn Header="Name" Width="*" MinWidth="150">
+        <DataGridTemplateColumn.CellTemplate>
+         <DataTemplate><TextBlock Text="{Binding Package.Name}" TextTrimming="CharacterEllipsis" ToolTip="{Binding Package.Name}"/></DataTemplate>
+        </DataGridTemplateColumn.CellTemplate>
+       </DataGridTemplateColumn>
+       <DataGridTemplateColumn Header="Package ID" Width="2*" MinWidth="180">
+        <DataGridTemplateColumn.CellTemplate>
+         <DataTemplate><TextBlock Text="{Binding Package.Id}" TextTrimming="CharacterEllipsis" ToolTip="{Binding Package.Id}"/></DataTemplate>
+        </DataGridTemplateColumn.CellTemplate>
+       </DataGridTemplateColumn>
        <DataGridTextColumn Header="Source" Binding="{Binding Package.Source}"/>
        <DataGridTextColumn Header="Installed" Binding="{Binding Package.Installed}"/>
-       <DataGridTextColumn Header="Available" Binding="{Binding Package.Available}"/>
+       <DataGridTemplateColumn Header="Available" Width="150">
+        <DataGridTemplateColumn.CellTemplate>
+         <DataTemplate><TextBlock Text="{Binding Package.Available}" TextTrimming="CharacterEllipsis" ToolTip="{Binding Package.Available}"/></DataTemplate>
+        </DataGridTemplateColumn.CellTemplate>
+       </DataGridTemplateColumn>
        <DataGridTextColumn Header="Eligibility" Visibility="Collapsed" Binding="{Binding Package.Eligibility}"/>
-       <DataGridTemplateColumn Header="Upgrade progress" Width="145">
+       <DataGridTemplateColumn Header="Progress" Width="220">
         <DataGridTemplateColumn.CellTemplate>
          <DataTemplate>
-          <StackPanel Margin="4,2">
-           <TextBlock Text="{Binding Operation.RowStatus, TargetNullValue=—}"/>
+          <StackPanel Margin="4,1">
+           <DockPanel>
+            <TextBlock Text="{Binding Operation.RowStatus, TargetNullValue=Ready}" FontWeight="SemiBold"/>
+            <TextBlock Text="{Binding Operation.ProgressDetail}" Margin="8,0,0,0" TextTrimming="CharacterEllipsis" ToolTip="{Binding Operation.ProgressDetail}"/>
+           </DockPanel>
            <ProgressBar Height="5" Maximum="100" Value="{Binding Operation.ProgressValue, Mode=OneWay}"
             IsIndeterminate="{Binding Operation.ProgressIndeterminate, FallbackValue=False}"
             Visibility="{Binding Operation.ShowProgress, Converter={StaticResource VisibleWhenTrue}, FallbackValue=Collapsed}"
