@@ -48,6 +48,12 @@ Compress-Archive -Path .local/publish/* -DestinationPath .local/WingetUI-win-x64
 
 `.local`, `bin`, and `obj` are ignored build output and must not be committed.
 
+Regenerate the multi-size Windows icon after changing its source PNG:
+
+```powershell
+./tools/Convert-PngToIco.ps1 -InputPath src/WingetUI.App/Assets/WingetUI.png -OutputPath src/WingetUI.App/Assets/WingetUI.ico
+```
+
 ## Debugging boundaries
 
 - Start with `MainViewModel.Inventory`, `Search`, or `Operations` for workflow state.
