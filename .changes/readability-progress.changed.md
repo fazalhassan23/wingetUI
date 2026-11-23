@@ -1,0 +1,1 @@
+Improved dark-mode navigation contrast, clipped long package text cleanly, hid idle progress bars, and added download size, smoothed speed, and estimated time to per-package progress where WinGet supplies byte totals.
