@@ -6,3 +6,4 @@ Update checkboxes retain independent selections and the batch uses only checked 
 Administrator sessions run WinGet in-process so supported installers can use the session elevation.
 Added per-package upgrade progress and a sortable Activity log with copyable details.
 Refreshed navigation, spacing, table readability, and button styling for the desktop interface.
+The Updates header checkbox selects or clears every update and indicates partial selection.

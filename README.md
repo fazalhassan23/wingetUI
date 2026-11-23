@@ -44,3 +44,4 @@ Use **Restart as administrator** before selecting a batch to approve elevation f
 Administrator sessions use WinGet's in-process COM engine. To check catalog access without installing anything, run the published smoke test from an elevated PowerShell with --check-in-process. Per-installer UAC behavior still requires an elevated batch test.
 During a batch, Updates keeps its rows visible and shows per-package progress. Select an Activity entry and use **Copy details** for timestamps, versions, and the result.
 The desktop layout uses a navigation sidebar, larger package rows, and a highlighted primary upgrade action. Windows system colors supply the interface palette.
+Use the checkbox above the update rows to select or clear all updates. A filled intermediate state indicates that only some updates are selected.

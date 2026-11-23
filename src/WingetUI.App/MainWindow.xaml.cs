@@ -78,6 +78,9 @@ public partial class MainWindow : Window
 
     private void SelectAllUpdates(object sender, RoutedEventArgs e) => SetUpdateChecks(true);
 
+    private void SelectAllCheckboxClicked(object sender, RoutedEventArgs e) =>
+        SetUpdateChecks(!model.Updates.All(row => row.IsChecked));
+
     private void ClearUpdates(object sender, RoutedEventArgs e) => SetUpdateChecks(false);
 
     private void SetUpdateChecks(bool value)
@@ -97,6 +100,9 @@ public partial class MainWindow : Window
     private void UpdateSelectionCount()
     {
         int count = model.Updates.Count(row => row.IsChecked);
+        SelectAllCheckbox.IsEnabled = model.Updates.Count > 0;
+        SelectAllCheckbox.IsChecked = count == 0 ? false :
+            count == model.Updates.Count ? true : null;
         UpgradeButton.Content = $"_Upgrade selected ({count})";
         UpgradeButton.IsEnabled = count > 0;
     }

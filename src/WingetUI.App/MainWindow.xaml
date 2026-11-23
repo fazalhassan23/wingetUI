@@ -116,7 +116,13 @@
      </StackPanel>
      <DataGrid x:Name="UpdatesGrid" Style="{StaticResource Packages}" ItemsSource="{Binding Updates}" AutomationProperties.Name="Available updates">
       <DataGrid.Columns>
-       <DataGridTemplateColumn Header="Select" Width="64">
+       <DataGridTemplateColumn Width="64" CanUserSort="False">
+        <DataGridTemplateColumn.Header>
+         <CheckBox x:Name="SelectAllCheckbox" IsEnabled="False"
+          Click="SelectAllCheckboxClicked" HorizontalAlignment="Center"
+          AutomationProperties.Name="Select all updates"
+          ToolTip="Select or clear all updates"/>
+        </DataGridTemplateColumn.Header>
         <DataGridTemplateColumn.CellTemplate>
          <DataTemplate>
           <CheckBox HorizontalAlignment="Center" VerticalAlignment="Center"
